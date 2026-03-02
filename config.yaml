@@ -1,0 +1,60 @@
+# ========================================
+# 电商用户模块配置文件
+# ========================================
+
+# 数据库配置 (PostgreSQL)
+database:
+  host: "localhost"
+  port: 5432
+  username: "postgres"
+  password: "postgres"
+  name: "ecommerce"
+  pool_size: 5
+  max_overflow: 10
+  echo: false
+
+# 应用配置
+app:
+  host: "0.0.0.0"
+  port: 8080
+  debug: true
+  title: "电商用户服务 API"
+  version: "1.0.0"
+
+# JWT配置
+jwt:
+  secret_key: "your-super-secret-key-change-in-production"
+  algorithm: "HS256"
+  access_token_expire_minutes: 30
+
+# 密码加密配置
+security:
+  bcrypt_rounds: 12
+
+# 异常码配置
+error_codes:
+  # 成功
+  SUCCESS: 0
+  
+  # 参数异常 (1001-1999)
+  PARAM_INVALID: 1001
+  PARAM_MISSING: 1002
+  PARAM_FORMAT_ERROR: 1003
+  
+  # 用户异常 (2001-2999)
+  USER_NOT_FOUND: 2001
+  USER_EXISTS: 2002
+  USER_DISABLED: 2003
+  USER_UNAUTHORIZED: 2004
+  
+  # 认证异常 (3001-3999)
+  PASSWORD_WRONG: 3001
+  TOKEN_INVALID: 3002
+  TOKEN_EXPIRED: 3003
+  
+  # 数据库异常 (4001-4999)
+  DB_ERROR: 4001
+  DB_CONNECTION_FAILED: 4002
+  
+  # 权限异常 (5001-5999)
+  PERMISSION_DENIED: 5001

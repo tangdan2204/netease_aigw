@@ -1,0 +1,153 @@
+{
+  "_comment": "网易 AIGW OpenCode 完整配置模板",
+  "_使用说明": "将此配置复制到 ~/.config/opencode/opencode.json 中",
+  "_重要提示": "将 YOUR_APP_ID.YOUR_APP_KEY 替换为你的实际凭证",
+  
+  "provider": {
+    "openai": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://aigw.netease.com/v1",
+        "headers": {
+          "Authorization": "Bearer YOUR_APP_ID.YOUR_APP_KEY"
+        }
+      },
+      "models": {
+        "claude-opus-4-6": {
+          "name": "Claude Opus 4.6 (AIGW)",
+          "description": "最强推理能力，适合复杂分析和代码生成",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "tags": ["claude", "reasoning", "code"]
+        },
+        "claude-sonnet-4-6": {
+          "name": "Claude Sonnet 4.6 (AIGW)",
+          "description": "平衡性能与速度，适合日常对话和内容创作",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "tags": ["claude", "balanced", "creative"]
+        },
+        "claude-haiku-4-6": {
+          "name": "Claude Haiku 4.6 (AIGW)",
+          "description": "快速响应，适合简单问答和快速原型",
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          },
+          "tags": ["claude", "fast", "simple"]
+        },
+        "deepseek-chat": {
+          "name": "DeepSeek Chat (AIGW)",
+          "description": "通用对话模型，高性价比",
+          "limit": {
+            "context": 128000,
+            "output": 65536
+          },
+          "tags": ["deepseek", "chat", "cost-effective"]
+        },
+        "deepseek-reasoner": {
+          "name": "DeepSeek Reasoner (AIGW)",
+          "description": "推理专家，适合数学计算和逻辑分析",
+          "limit": {
+            "context": 128000,
+            "output": 65536
+          },
+          "tags": ["deepseek", "reasoning", "math"]
+        },
+        "doubao-pro-32k": {
+          "name": "Doubao Pro 32K (AIGW)",
+          "description": "低成本快速，适合简单对话和客服",
+          "limit": {
+            "context": 32000,
+            "output": 4096
+          },
+          "tags": ["doubao", "fast", "cheap"]
+        },
+        "doubao-pro-128k": {
+          "name": "Doubao Pro 128K (AIGW)",
+          "description": "大上下文，适合长文档分析",
+          "limit": {
+            "context": 128000,
+            "output": 4096
+          },
+          "tags": ["doubao", "long-context"]
+        },
+        "gemini-2-0-flash": {
+          "name": "Gemini 2.0 Flash (AIGW)",
+          "description": "超大上下文，支持多模态任务",
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          },
+          "tags": ["gemini", "multimodal", "large-context"]
+        },
+        "gemini-1-5-pro": {
+          "name": "Gemini 1.5 Pro (AIGW)",
+          "description": "超大上下文，适合复杂分析",
+          "limit": {
+            "context": 2097152,
+            "output": 65536
+          },
+          "tags": ["gemini", "analysis", "large-context"]
+        },
+        "qwen-turbo": {
+          "name": "Qwen Turbo (AIGW)",
+          "description": "快速响应，适合实时对话",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          },
+          "tags": ["qwen", "fast", "realtime"]
+        },
+        "qwen-max": {
+          "name": "Qwen Max (AIGW)",
+          "description": "高质量输出，适合内容生成",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          },
+          "tags": ["qwen", "quality", "creative"]
+        },
+        "kimi2-5-thinking": {
+          "name": "Kimi 2.5 Thinking (AIGW)",
+          "description": "长文本理解，适合文档阅读",
+          "limit": {
+            "context": 128000,
+            "output": 65536
+          },
+          "tags": ["kimi", "long-text", "reading"]
+        },
+        "glm-4-plus": {
+          "name": "GLM-4 Plus (AIGW)",
+          "description": "平衡性能，适合日常使用",
+          "limit": {
+            "context": 128000,
+            "output": 8192
+          },
+          "tags": ["glm", "balanced"]
+        },
+        "ernie-4-5-turbo": {
+          "name": "ERNIE 4.5 Turbo (AIGW)",
+          "description": "中文优化，适合中文对话",
+          "limit": {
+            "context": 32000,
+            "output": 4096
+          },
+          "tags": ["ernie", "chinese", "fast"]
+        }
+      }
+    }
+  },
+  
+  "_模型选择建议": {
+    "日常对话": ["claude-sonnet-4-6", "qwen-turbo"],
+    "复杂推理": ["claude-opus-4-6", "deepseek-reasoner"],
+    "代码生成": ["claude-opus-4-6", "claude-sonnet-4-6"],
+    "长文档分析": ["gemini-1-5-pro", "doubao-pro-128k"],
+    "成本敏感": ["deepseek-chat", "doubao-pro-32k"]
+  }
+}
