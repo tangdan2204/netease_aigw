@@ -188,11 +188,14 @@ claude
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-6",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-20250514",
     "ANTHROPIC_MODEL": "claude-opus-4-6",
-    "ANTHROPIC_VERSION": "2023-06-01"
+    "ANTHROPIC_VERSION": "2023-06-01",
+    "ENABLE_TOOL_SEARCH": "false"
   },
   "includeCoAuthoredBy": false
 }
 ```
+
+> ⚠️ **重要**：必须设置 `ENABLE_TOOL_SEARCH": "false"`，否则长时间对话后会出现 `tool_reference` 相关 API 错误。详见 [8.5 ToolSearch 兼容问题](#85-toolsearch-兼容问题重要)。
 
 ### 4.3 Auth 认证方式配置
 
@@ -492,7 +495,74 @@ print(response.choices[0].message.content)
 |----------|------|----------|
 | `model is not supported` | 模型名错误 | 使用本文档中的正确模型名 |
 | `no available resource` | APP 未开通该模型 | 联系管理员开通或更换模型 |
-| `tool_reference 工具异常` | Claude Code 兼容问题 | 设置环境变量 `ENABLE_TOOL_SEARCH=false` |
+| `tool_reference tool_name: Field required` | Claude Code ToolSearch 兼容问题 | 详见 8.5 |
+| `tool_reference ... does not match any of the expected tags` | Claude Code ToolSearch 兼容问题 | 详见 8.5 |
+
+### 8.5 ToolSearch 兼容问题（重要）
+
+> 当使用 Claude Code + AIGW 时，如果启用了 MCP 工具（Plugin），长时间对话后会出现 tool_reference 相关错误。
+
+#### 错误示例
+
+```
+API Error: 400 [{"error":{"code":400,"message":"supplier response failed...
+messages.3.content.0.tool_result.content.0.tool_reference.tool_name: Field required"}}]
+```
+
+或
+
+```
+messages.166.content.0.tool_result.content.0: Input tag 'tool_reference' found using 'type'
+does not match any of the expected tags: 'document', 'image', 'search_result', 'text'
+```
+
+#### 原因
+
+Claude Code 的 ToolSearch 功能会在工具结果中返回 `tool_reference` 类型的内容块，但 AIGW API 不支持这种类型（只支持 `text`, `image`, `document`, `search_result`）。
+
+#### 解决方案
+
+**方法一：关闭 ToolSearch（推荐）**
+
+在配置中添加 `ENABLE_TOOL_SEARCH=false`：
+
+```json
+// ~/.claude/settings.json
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "YOUR_APP_ID.YOUR_APP_KEY",
+    "ANTHROPIC_BASE_URL": "https://aigw.netease.com",
+    "ANTHROPIC_MODEL": "claude-opus-4-6",
+    "ENABLE_TOOL_SEARCH": "false"
+  }
+}
+```
+
+CC Switch 配置文件中也需添加相同配置。
+
+**方法二：提高 ToolSearch 阈值**
+
+如果不想完全关闭，可以提高触发阈值：
+
+```json
+{
+  "env": {
+    "ENABLE_TOOL_SEARCH": "auto:30"
+  }
+}
+```
+
+这表示当工具描述超过 30% 上下文时才启用 ToolSearch（默认是 10%）。
+
+#### 影响说明
+
+- **关闭 ToolSearch 的影响**：如果你的 MCP 工具很多（>10% 上下文），所有工具描述会随请求发送，消耗更多 token
+- **建议**：如果平时只使用几个 MCP 工具，直接关闭即可，无明显影响
+
+#### 相关 Issue
+
+- [Claude Code Issue #28870](https://github.com/anthropics/claude-code/issues/28870): ToolSearch tool_reference causes API 400 error
+- [Claude Code Issue #25212](https://github.com/anthropics/claude-code/issues/25212): ToolSearch generates tool_reference blocks on Bedrock
 
 ### 8.4 诊断命令
 
