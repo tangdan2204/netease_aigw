@@ -15,6 +15,7 @@
 - [模型列表](#模型列表)
 - [API 参考](#api-参考)
 - [故障排除](#故障排除)
+- [CC Switch 配置非 Claude 模型](#cc-switch-配置非-claude-模型)
 - [项目结构](#项目结构)
 
 ---
@@ -489,6 +490,26 @@ curl -X POST "https://aigw.netease.com/v1/chat/completions" \
 
 ---
 
+## CC Switch 配置非 Claude 模型
+
+如果你使用 [CC Switch](https://ccswitch.dev/) 作为 Claude Code 的代理，可以通过它将 AIGW 的 OpenAI 兼容模型（GPT-5.2 Codex、DeepSeek、Gemini、Qwen 等）接入 Claude Code。
+
+**核心要点**：在 CC Switch 的 Provider 配置中设置 `meta.apiFormat = "openai_chat"`，CC Switch 会自动完成 Anthropic ↔ OpenAI Chat 格式的双向转换。
+
+> 详细配置步骤、注意事项和故障排查请参考 **[CC_SWITCH_CODEX_GUIDE.md](CC_SWITCH_CODEX_GUIDE.md)**
+
+**快速创建 Provider 脚本**：
+
+```bash
+# Codex 模型
+./scripts/create_ccswitch_provider.sh "aigw-codex" "AIGW Codex" "gpt-5.2-codex-2026-01-14" "appid.appkey" "openai_chat"
+
+# DeepSeek 模型
+./scripts/create_ccswitch_provider.sh "aigw-deepseek" "AIGW DeepSeek" "deepseek-chat" "appid.appkey" "openai_chat"
+```
+
+---
+
 ## 项目结构
 
 ```
@@ -497,6 +518,7 @@ netease_aigw/
 ├── QUICK_START.md               # 快速开始指南
 ├── MODEL_GUIDE.md               # 模型选择指南
 ├── AIGW_COMPLETE_GUIDE.md       # 完整接入指南
+├── CC_SWITCH_CODEX_GUIDE.md     # CC Switch 配置 Codex 等非 Claude 模型指南
 ├── CONFIG_TROUBLESHOOTING.md    # 故障排查指南
 ├── MODEL_TEST_RESULTS.md        # 模型测试结果
 ├── .env.example                 # 环境变量模板
@@ -518,7 +540,8 @@ netease_aigw/
 │       └── api-spec.md          # API 规范
 │
 ├── scripts/                     # 独立脚本
-│   └── netease_aigw_client.py  # API 客户端
+│   ├── netease_aigw_client.py   # API 客户端
+│   └── create_ccswitch_provider.sh  # CC Switch Provider 创建脚本
 │
 ├── app/                         # Demo FastAPI 应用
 │   ├── main.py                  # FastAPI 主程序
