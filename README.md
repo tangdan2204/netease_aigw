@@ -14,6 +14,7 @@
 - [使用示例](#使用示例)
 - [模型列表](#模型列表)
 - [API 参考](#api-参考)
+- [Gemini 3.1 Flash Image 图像生成](#gemini-31-flash-image-图像生成)
 - [故障排除](#故障排除)
 - [CC Switch 配置非 Claude 模型](#cc-switch-配置非-claude-模型)
 - [项目结构](#项目结构)
@@ -333,6 +334,7 @@ python test_aigw_claude.py "你好，请介绍一下你自己"
 | `gemini-3-flash` | 1M | 65K | 超大上下文 |
 | `gemini-2.5-pro` | 1M | 65K | 综合能力最强 |
 | `gemini-2.5-flash` | 1M | 65K | 快速且能力强 |
+| `gemini-3.1-flash-image` | 1M | 65K | **多模态图像生成**（需特殊参数） |
 
 ### 其他模型
 
@@ -352,6 +354,113 @@ python test_aigw_claude.py "你好，请介绍一下你自己"
 | 成本敏感 | `deepseek-chat` | 0.7 |
 | 中文优化 | `qwen-max` | 0.7 |
 | 超长文档 | `gemini-3-flash` | 0.5 |
+| AI 图像生成 | `gemini-3.1-flash-image` | 0.7-0.8 |
+
+---
+
+## Gemini 3.1 Flash Image 图像生成
+
+`gemini-3.1-flash-image` 是 Gemini 系列的多模态图像生成模型，支持文本+图像混合输出。
+
+> 模型详情：[ModelSpace - gemini-3.1-flash-image](https://modelspace.netease.com/model_app/detail/gemini-3.1-flash-image)
+>
+> 完整调用指南：[GEMINI_FLASH_IMAGE_GUIDE.md](GEMINI_FLASH_IMAGE_GUIDE.md)
+
+### 注意事项
+
+1. **必须传 `vertexai` 参数** — 不传会返回 400 错误
+2. **图像数据在 `image_urls` 字段** — 不在 `content` 中，`content` 可能为空字符串
+3. **支持推理链** — 响应包含 `reasoning_content` 字段
+4. **注意限流** — 图像生成消耗较大，易触发 429，建议请求间隔 15-20 秒
+
+### 最小调用示例
+
+```bash
+curl -X POST "https://aigw.netease.com/v1/chat/completions" \
+  -H "Authorization: Bearer {AppID}.{AppKey}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemini-3.1-flash-image",
+    "messages": [{"role": "user", "content": "画一只卡通橘猫"}],
+    "max_tokens": 8192,
+    "temperature": 0.7,
+    "vertexai": {
+      "response_modalities": ["IMAGE", "TEXT"]
+    }
+  }'
+```
+
+### Python 调用
+
+```python
+import requests, base64
+
+response = requests.post(
+    "https://aigw.netease.com/v1/chat/completions",
+    headers={
+        "Authorization": "Bearer {AppID}.{AppKey}",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "gemini-3.1-flash-image",
+        "messages": [{"role": "user", "content": "画一只卡通橘猫"}],
+        "max_tokens": 8192,
+        "vertexai": {"response_modalities": ["IMAGE", "TEXT"]},
+    },
+    timeout=120,
+)
+
+data = response.json()
+msg = data["choices"][0]["message"]
+
+# 文本内容
+print("文本:", msg.get("content", ""))
+
+# 图像提取（关键：在 image_urls 字段中）
+for url in msg.get("image_urls", []):
+    _, b64data = url.split(",", 1)
+    with open("output.png", "wb") as f:
+        f.write(base64.b64decode(b64data))
+    print("图像已保存: output.png")
+```
+
+### OpenAI SDK 兼容调用
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="{AppID}.{AppKey}",
+    base_url="https://aigw.netease.com/v1",
+)
+
+response = client.chat.completions.create(
+    model="gemini-3.1-flash-image",
+    messages=[{"role": "user", "content": "画一只卡通橘猫"}],
+    max_tokens=8192,
+    extra_body={"vertexai": {"response_modalities": ["IMAGE", "TEXT"]}},
+)
+```
+
+### 响应结构
+
+```json
+{
+  "choices": [{
+    "message": {
+      "role": "assistant",
+      "content": "文本描述（图像生成时可能为空）",
+      "reasoning_content": "推理过程",
+      "image_urls": ["data:image/png;base64,iVBORw0KGgo..."]
+    }
+  }],
+  "usage": {
+    "prompt_tokens": 226,
+    "completion_tokens": 2748,
+    "total_tokens": 2974
+  }
+}
+```
 
 ---
 
@@ -516,6 +625,7 @@ curl -X POST "https://aigw.netease.com/v1/chat/completions" \
 netease_aigw/
 ├── README.md                    # 本文件
 ├── QUICK_START.md               # 快速开始指南
+├── GEMINI_FLASH_IMAGE_GUIDE.md  # Gemini 图像生成完整指南
 ├── MODEL_GUIDE.md               # 模型选择指南
 ├── AIGW_COMPLETE_GUIDE.md       # 完整接入指南
 ├── CC_SWITCH_CODEX_GUIDE.md     # CC Switch 配置 Codex 等非 Claude 模型指南
